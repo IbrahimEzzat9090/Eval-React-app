@@ -381,23 +381,6 @@ code {
   }
 }
 
-.apply-filters-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: #000;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 10px;
-}
-
-.apply-filters-btn:hover {
-  background-color: #333;
-}
-
 .no-results {
   padding: 100px 0;
   color: #999;

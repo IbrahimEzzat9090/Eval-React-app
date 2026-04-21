@@ -1,10 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { allProducts } from './Products';
 
 export const ProductDetails = () => {
   const { id } = useParams();
   const product = allProducts.find((p) => p.id === parseInt(id));
+
+  const fallbackImage = `${process.env.PUBLIC_URL}/images/no-image.jpg`;
+  const handleImageError = useCallback((e) => {
+    e.target.src = fallbackImage;
+  }, [fallbackImage]);
 
   useEffect(() => {
     if (product) {
@@ -22,8 +27,8 @@ export const ProductDetails = () => {
     <div className="product-details-container">
       <div className="product-details-content">
         <div className="details-image-section">
-          {product.image ? (
-            <img src={product.image} alt={product.name} className="large-product-image" />
+          {product.image ? ( // Check if product.image exists, then try to load it
+            <img src={product.image} alt={product.name} className="large-product-image" onError={handleImageError} />
           ) : (
             <div className="product-image-placeholder large"></div>
           )}

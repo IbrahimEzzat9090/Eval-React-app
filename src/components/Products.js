@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
 // Move mock data outside to maintain consistency during filtering
@@ -41,6 +41,11 @@ export const Products = () => {
     document.title = "Eval App | Our Products";
   }, []);
 
+  const fallbackImage = `${process.env.PUBLIC_URL}/images/no-image.jpg`;
+  const handleImageError = useCallback((e) => {
+    e.target.src = fallbackImage;
+  }, [fallbackImage]);
+
   const [filteredProducts, setFilteredProducts] = useState(allProducts);
   const [selectedCategories, setSelectedCategories] = useState(['All']);
   const [priceRange, setPriceRange] = useState('all');
@@ -61,23 +66,26 @@ export const Products = () => {
     setSelectedCategories(newCategories);
   };
 
-  const applyFilters = () => {
-    let result = allProducts;
+  // Use useMemo to re-filter products only when dependencies change
+  const memoizedFilteredProducts = useMemo(() => {
+    let currentResult = allProducts;
 
     // Filter by Category
     if (!selectedCategories.includes('All')) {
-      result = result.filter(p => selectedCategories.includes(p.category));
+      currentResult = currentResult.filter(p => selectedCategories.includes(p.category));
     }
 
     // Filter by Price
     if (priceRange !== 'all') {
-      if (priceRange === 'under50') result = result.filter(p => p.price < 50);
-      else if (priceRange === '50-100') result = result.filter(p => p.price >= 50 && p.price <= 100);
-      else if (priceRange === 'over100') result = result.filter(p => p.price > 100);
+      if (priceRange === 'under50') currentResult = currentResult.filter(p => p.price < 50);
+      else if (priceRange === '50-100') currentResult = currentResult.filter(p => p.price >= 50 && p.price <= 100);
+      else if (priceRange === 'over100') currentResult = currentResult.filter(p => p.price > 100);
     }
+    return currentResult;
+  }, [selectedCategories, priceRange]); // Dependencies for useMemo
 
-    setFilteredProducts(result);
-  };
+  // Update the state with the memoized filtered products
+  useEffect(() => { setFilteredProducts(memoizedFilteredProducts); }, [memoizedFilteredProducts]);
 
   return (
     <div className="products-page-container">
@@ -108,10 +116,6 @@ export const Products = () => {
             <li><label><input type="radio" name="price" checked={priceRange === 'over100'} onChange={() => setPriceRange('over100')} /> Over $100</label></li>
           </ul>
         </div>
-
-        <button className="apply-filters-btn" onClick={applyFilters}>
-          Apply Filters
-        </button>
       </aside>
 
       <main className="products-main">
@@ -129,7 +133,7 @@ export const Products = () => {
                   (Check if they are .png or .jpeg instead!)
               */}
               {product.image ? (
-                <img src={product.image} alt={product.name} className="product-image" />
+                <img src={product.image} alt={product.name} className="product-image" onError={handleImageError} />
               ) : (
                 <div className="product-image-placeholder"></div>
               )}
